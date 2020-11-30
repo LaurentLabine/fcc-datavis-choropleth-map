@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <title>FCC Heat Map Challenge</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+    <h1 id="title">United States Educational Attainment</h1>
+    <div id="description">
+      Percentage of adults age 25 and older with a bachelor's degree or higher
+      (2010-2014)
+    </div>
+    <div>
+</div>
+
+<script type="text/javascript">
+
+//Based on https://www.d3-graph-gallery.com/graph/choropleth_basic.html
+
+const w = 2000
+const h = 700
+const margin = {top:30, bottom:30, left:30, right:30}
+var data = d3.map();
+
+// The svg
+const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+const path = d3.geoPath(); //the method that does the actual drawing, which you'll call later
+// Load external data and boot
+d3.queue()
+  .defer(d3.json, "https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/counties.json")
+  .defer(d3.json, "https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/for_user_education.json"/*, function(d) { data.set(d.code, +d.pop); }*/)
+  .await(ready);
+
+function ready(error,topoData,education) {
+    if(error)
+    throw error;
+
+// console.log(topoData)
+
+const cScale = d3.scaleSequential()//Color scales to fill the bars
+                    .interpolator(d3.interpolateCubehelixDefault)
+                    .domain([0,Math.max.apply(Math, education.map(function(o) { return o.bachelorsOrHigher; }))]);
+
+var Tooltip = d3.select("body")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .attr("id","tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
+
+    // Three function that change the tooltip when user hover / move / leave a cell
+    var mouseover = function(d) {
+        Tooltip
+        .style("opacity", 1)
+        d3.select(this)
+        .style("stroke", "black")
+        .style("opacity", 1)
+    }
+    var mousemove = function(d) {
+
+        Tooltip
+        .html(function () {
+          var result = education.filter(function (obj) {
+            return obj.fips === d.id;
+          });
+          if (result[0]) {
+            return (
+              result[0].area_name + 
+              "<br>" +
+              result[0].state +
+              "<br>" +
+              result[0].bachelorsOrHigher +
+              '%'
+            );
+          }
+          // could not find a matching fips id in the data
+          return 0;
+        })
+        .attr('data-education', function () {
+          var result = education.filter(function (obj) {
+            return obj.fips === d.id;
+          });
+          if (result[0]) {
+            return result[0].bachelorsOrHigher;
+          }
+          // could not find a matching fips id in the data
+          return 0;
+        })
+        .attr("data-year","0")
+        .style("top", (d3.event.pageY + 16) + "px")
+        .style("left", (d3.event.pageX + 16) + "px");
+
+    }
+    var mouseleave = function(d) {
+        Tooltip
+        .style("opacity", 0)
+        d3.select(this)
+        .style("stroke", "none")
+    }
+
+svg
+  .append("g")
+  .attr("class","counties")
+  .selectAll("path")  // should be familiar, adding "path" for all data points, like adding 'rect'
+  .data(topojson.feature(topoData, topoData.objects.counties).features) // here you convert topojson data to geojson data. I have no idea how the math works. Topojson is like a 'compressed' version of geojson
+  .enter()
+  .append("path")
+  .attr("class","county")
+  .attr("data-fips", (d) => d.id)
+  .attr("data-education", function(d) {
+      var res = education.filter((obj) => obj.fips === d.id)
+      if(res[0])
+        return res[0].bachelorsOrHigher
+      return 0
+  })
+  .attr("d", path)  // don't know what 'd' is, but it seems analogous to "x-y-cordinates", and path seems to tell the coordinates where to go using magical math 
+  .attr("fill", function(d) {
+      var res = education.filter((obj) => obj.fips === d.id)
+      if(res[0])
+        return cScale(res[0].bachelorsOrHigher)
+      return cScale(0)
+  })
+  .on("mouseover", mouseover)
+  .on("mousemove", mousemove)
+  .on("mouseleave", mouseleave);
+
+
+var legendBarHeight = 40;
+
+const SVGLegend = d3
+    .select("body")
+    .append("svg")
+    .attr("id","legend")
+    .attr("width", w)
+    .attr("height", h/5);
+
+SVGLegend.append("text")
+    .attr("x", margin.left)
+    .attr("y", margin.top/2)
+    .attr("text-anchor", "left")
+    .style("font-size", "16px")
+    .text("% of population with a bachelor degree");
+
+//Inspired by drawScale function taken from : http://using-d3js.com/04_05_sequential_scales.html
+
+var data = Array.from(Array(100).keys());
+
+const legScale = d3.scaleSequential()//Color scales to fill the bars
+    .interpolator(d3.interpolateCubehelixDefault)
+    .domain([0,99]);
+
+var xLegendScale = d3.scaleLinear()//Scale to draw
+    .domain([0,100])
+    .range([0, 580]);
+
+var xLegendScale2 = d3.scaleLinear()//Equivalent scale to show data equivalent on scale
+    .domain([0,Math.max.apply(Math, education.map(function(o) { return o.bachelorsOrHigher; }))])
+    .range([0, 580]);
+
+const xLegendAxis = d3.axisBottom()
+    .tickSizeOuter(0)
+    .scale(xLegendScale2);
+
+    SVGLegend.append("g")
+    .attr("transform", "translate(" + margin.left + "," + (30 + legendBarHeight) + ")")
+    .attr("id","Legend rect")
+    .call(xLegendAxis);
+
+    SVGLegend
+    .selectAll("rect")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("x", (d) => margin.left + Math.floor(xLegendScale(d)))
+    .attr("y", 30)
+    .attr("height", legendBarHeight)
+    .attr("width", (d) => {
+        if (d == 99) {
+            return 6;
+        }
+        return Math.floor(xLegendScale(d+1)) - Math.floor(xLegendScale(d)) + 1;
+    })
+    .attr("fill", (d) => legScale(d));
+}
+    </script>
+</body>
+</html>
