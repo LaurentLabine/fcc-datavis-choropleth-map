@@ -1,6 +1,6 @@
 # freeCodeCamp Front End Development Libraries Projects - Project 4 - Visualize Data with a Choropleth Map
 
-See the result here: https://laurentlabine.github.io/fcc-datavis-heat-map/
+See the result here: https://laurentlabine.github.io/fcc-datavis-choropleth-map/
 
 I built this project as part of freeCodeCamp's curriculum to learn and practice Data Visualization using D3.js library.
 
