@@ -10,16 +10,17 @@
   <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
-  <title>FCC Heat Map Challenge</title>
+  <title>FCC Choropleth Map Challenge</title>
   <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
   <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
-  <h1 id="title">United States Educational Attainment</h1>
-  <h2 id="description">Percentage of adults age 25 and older with a bachelor's degree or higher
-    (2010-2014)</h2>
   <div id="container">
+    <h1 id="title">United States Educational Attainment</h1>
+    <h2 id="description">Percentage of adults age 25 and older with a bachelor's degree or higher
+      (2010-2014)</h2>
+
     <script type="text/javascript">
       //Based on https://www.d3-graph-gallery.com/graph/choropleth_basic.html
       const w = 950
@@ -199,6 +200,7 @@
           .attr("fill", (d) => legScale(d));
       }
     </script>
+  </div>
 </body>
 
 </html>
