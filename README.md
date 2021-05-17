@@ -2,6 +2,8 @@
 
 See the result here: https://laurentlabine.github.io/fcc-datavis-choropleth-map/
 
+Thumbnail available here : https://user-images.githubusercontent.com/20836468/118497309-3d985b00-b725-11eb-8bcb-efd342b8a5e0.png
+
 I built this project as part of freeCodeCamp's curriculum to learn and practice Data Visualization using D3.js library.
 
 The data represents the percentage of adults age 25 and older with a bachelor's degree or higher from 2010 to 2014 and can be accessed here :
